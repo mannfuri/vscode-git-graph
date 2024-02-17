@@ -155,12 +155,7 @@ class GitGraphView {
 
 		headBtn.innerHTML = SVG_ICONS.eyeOpen;
 		headBtn.addEventListener('click', () => {
-			const headDots = document.getElementsByClassName('commitHeadDot');
-			if (headDots.length === 1) {
-				// Scroll its parent (the commit row) into view. If you just
-				// scroll the dot into view it chops off part of the row.
-				headDots[0].parentElement?.scrollIntoView();
-			}
+			scrollToDot();
 		});
 		fetchBtn.title = 'Fetch' + (this.config.fetchAndPrune ? ' & Prune' : '') + ' from Remote(s)';
 		fetchBtn.innerHTML = SVG_ICONS.download;
@@ -4010,4 +4005,22 @@ function generateSignatureHtml(signature: GG.GitSignature) {
 function closeDialogAndContextMenu() {
 	if (dialog.isOpen()) dialog.close();
 	if (contextMenu.isOpen()) contextMenu.close();
+}
+
+function scrollToDot() {
+	const headDots = document.getElementsByClassName('commitHeadDot');
+	if (headDots.length === 1) {
+		headDots[0].parentElement?.scrollIntoView({ block: 'center' });
+	} else {
+		const commits = document.getElementsByClassName('commit');
+		if (commits.length === 0) {
+			return;
+		}
+		const lastCommit = commits[commits.length - 1];
+
+		lastCommit.scrollIntoView();
+
+		// 递归调用
+		setTimeout(scrollToDot, 500); // 500毫秒后调用
+	}
 }
