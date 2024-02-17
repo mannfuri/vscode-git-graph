@@ -3220,6 +3220,19 @@ class GitGraphView {
 const contextMenu = new ContextMenu(), dialog = new Dialog(), eventOverlay = new EventOverlay();
 let loaded = false;
 
+const styleElem = document.createElement('style');
+styleElem.textContent = `
+@keyframes breathe {
+  0%   {background-color: originalColor;}
+  50%  {background-color: blinkColor;}
+  100% {background-color: originalColor;}
+}
+
+.breathe {
+  animation: breathe 2s ease-in-out infinite;
+}`;
+document.head.appendChild(styleElem);
+
 window.addEventListener('load', () => {
 	if (loaded) return;
 	loaded = true;
@@ -4010,7 +4023,36 @@ function closeDialogAndContextMenu() {
 function scrollToDot() {
 	const headDots = document.getElementsByClassName('commitHeadDot');
 	if (headDots.length === 1) {
-		headDots[0].parentElement?.scrollIntoView({ block: 'center' });
+		(headDots[0] as HTMLElement).parentElement?.scrollIntoView({ block: 'center' });
+
+		const commitParent = headDots[0].closest('.commit') as HTMLElement;
+		if (commitParent) {
+			// 保存原始颜色
+			const originalColor = commitParent.style.backgroundColor;
+			// 设置闪烁颜色
+			const blinkColor = initialState.config.graph.blink || 'red';
+
+			// 更新样式元素的颜色
+			styleElem.textContent = `
+@keyframes breathe {
+  0%   {background-color: ${originalColor};}
+  50%  {background-color: ${blinkColor};}
+  100% {background-color: ${originalColor};}
+}
+
+.breathe {
+  animation: breathe 2s ease-in-out infinite;
+}`;
+
+			// 添加类以开始动画
+			commitParent.classList.add('breathe');
+
+			// 在一段时间后移除动画
+			setTimeout(() => {
+				commitParent.classList.remove('breathe');
+			}, 4000); // 在4秒后移除动画
+		}
+
 	} else {
 		const commits = document.getElementsByClassName('commit');
 		if (commits.length === 0) {
