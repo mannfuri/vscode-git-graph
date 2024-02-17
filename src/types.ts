@@ -607,6 +607,7 @@ export interface RequestAddTag extends RepoRequest {
 	readonly pushToRemote: string | null; // string => name of the remote to push the tag to, null => don't push to a remote
 	readonly pushSkipRemoteCheck: boolean;
 	readonly force: boolean;
+	readonly withHash: boolean;
 }
 export interface ResponseAddTag extends ResponseWithMultiErrorInfo {
 	readonly command: 'addTag';

@@ -703,15 +703,22 @@ export class DataSource extends Disposable {
 	 * @param force Force add the tag, replacing an existing tag with the same name (if it exists).
 	 * @returns The ErrorInfo from the executed command.
 	 */
-	public addTag(repo: string, tagName: string, commitHash: string, type: TagType, message: string, force: boolean) {
+	public addTag(repo: string, tagName: string, commitHash: string, type: TagType, message: string, force: boolean, withHash: boolean) {
+		let tmpTagName = tagName;
+
+		if (withHash) {
+			// msg.tagName 拼接
+			tmpTagName = tmpTagName + '.' + commitHash.substring(0, 8);
+		}
+
 		const args = ['tag'];
 		if (force) {
 			args.push('-f');
 		}
 		if (type === TagType.Lightweight) {
-			args.push(tagName);
+			args.push(tmpTagName);
 		} else {
-			args.push(getConfig().signTags ? '-s' : '-a', tagName, '-m', message);
+			args.push(getConfig().signTags ? '-s' : '-a', tmpTagName, '-m', message);
 		}
 		args.push(commitHash);
 		return this.runGitCommand(args, repo);
