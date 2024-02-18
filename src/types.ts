@@ -107,9 +107,9 @@ export interface GitRepoConfig {
 }
 
 export type GitRepoConfigBranches = { [branchName: string]: GitRepoConfigBranch };
-export interface ActionedUser{
-    name: string;
-    email: string;
+export interface ActionedUser {
+	name: string;
+	email: string;
 };
 export interface GitRepoConfigBranch {
 	readonly pushRemote: string | null;
@@ -291,6 +291,7 @@ export interface GraphConfig {
 	readonly style: GraphStyle;
 	readonly grid: { x: number, y: number, offsetX: number, offsetY: number, expandY: number };
 	readonly uncommittedChanges: GraphUncommittedChangesStyle;
+	readonly blink: string | null;
 }
 
 export interface KeybindingConfig {
