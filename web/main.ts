@@ -1606,7 +1606,7 @@ class GitGraphView {
 
 	/* Actions */
 
-	private addTagAction(hash: string, initialName: string, initialType: GG.TagType, initialMessage: string, initialPushToRemote: string | null, target: DialogTarget & CommitTarget, isInitialLoad: boolean = true) {
+	private addTagAction(hash: string, initialName: string, initialType: GG.TagType, initialMessage: string, initialPushToRemote: string | null, target: DialogTarget & CommitTarget, isInitialLoad: boolean = true, withHash: boolean = true) {
 		let mostRecentTagsIndex = -1;
 		for (let i = 0; i < this.commits.length; i++) {
 			if (this.commits[i].tags.length > 0 && (mostRecentTagsIndex === -1 || this.commits[i].date > this.commits[mostRecentTagsIndex].date)) {
@@ -1618,7 +1618,8 @@ class GitGraphView {
 		const inputs: DialogInput[] = [
 			{ type: DialogInputType.TextRef, name: 'Name', default: initialName, info: mostRecentTags.length > 0 ? 'The most recent tag' + (mostRecentTags.length > 1 ? 's' : '') + ' in the loaded commits ' + (mostRecentTags.length > 1 ? 'are' : 'is') + ' ' + formatCommaSeparatedList(mostRecentTags) + '.' : undefined },
 			{ type: DialogInputType.Select, name: 'Type', default: initialType === GG.TagType.Annotated ? 'annotated' : 'lightweight', options: [{ name: 'Annotated', value: 'annotated' }, { name: 'Lightweight', value: 'lightweight' }] },
-			{ type: DialogInputType.Text, name: 'Message', default: initialMessage, placeholder: 'Optional', info: 'A message can only be added to an annotated tag.' }
+			{ type: DialogInputType.Text, name: 'Message', default: initialMessage, placeholder: 'Optional', info: 'A message can only be added to an annotated tag.' },
+			{ type: DialogInputType.Checkbox, name: 'WithHash', value: withHash, info: 'Include the commit hash in the end of the tag name.' }
 		];
 		if (this.gitRemotes.length > 1) {
 			const options = [{ name: 'Don\'t push', value: '-1' }];
@@ -1638,11 +1639,14 @@ class GitGraphView {
 			const tagName = <string>values[0];
 			const type = <string>values[1] === 'annotated' ? GG.TagType.Annotated : GG.TagType.Lightweight;
 			const message = <string>values[2];
-			const pushToRemote = this.gitRemotes.length > 1 && <string>values[3] !== '-1'
-				? this.gitRemotes[parseInt(<string>values[3])]
-				: this.gitRemotes.length === 1 && <boolean>values[3]
+			const pushToRemote = this.gitRemotes.length > 1 && <string>values[4] !== '-1'
+				? this.gitRemotes[parseInt(<string>values[4])]
+				: this.gitRemotes.length === 1 && <boolean>values[4]
 					? this.gitRemotes[0]
 					: null;
+			const withHash = <boolean>values[3];
+
+
 
 			const runAddTagAction = (force: boolean) => {
 				runAction({
@@ -1654,7 +1658,8 @@ class GitGraphView {
 					message: message,
 					pushToRemote: pushToRemote,
 					pushSkipRemoteCheck: globalState.pushTagSkipRemoteCheck,
-					force: force
+					force: force,
+					withHash: withHash
 				}, 'Adding Tag');
 			};
 
@@ -1662,7 +1667,7 @@ class GitGraphView {
 				dialog.showTwoButtons('A tag named <b><i>' + escapeHtml(tagName) + '</i></b> already exists, do you want to replace it with this new tag?', 'Yes, replace the existing tag', () => {
 					runAddTagAction(true);
 				}, 'No, choose another tag name', () => {
-					this.addTagAction(hash, tagName, type, message, pushToRemote, target, false);
+					this.addTagAction(hash, tagName, type, message, pushToRemote, target, true);
 				}, target);
 			} else {
 				runAddTagAction(false);
