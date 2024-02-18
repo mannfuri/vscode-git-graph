@@ -2017,8 +2017,14 @@ class GitGraphView {
 	private observeWebviewStyleChanges() {
 		let fontFamily = getVSCodeStyle(CSS_PROP_FONT_FAMILY),
 			editorFontFamily = getVSCodeStyle(CSS_PROP_EDITOR_FONT_FAMILY),
-			findMatchColour = initialState.config.graph.blink || getVSCodeStyle(CSS_PROP_FIND_MATCH_HIGHLIGHT_BACKGROUND),
-			selectionBackgroundColor = !!getVSCodeStyle(CSS_PROP_SELECTION_BACKGROUND);
+
+			selectionBackgroundColor = !!getVSCodeStyle(CSS_PROP_SELECTION_BACKGROUND),
+
+			findMatchColour = initialState.config.graph.blink;
+
+		if (findMatchColour === '' || findMatchColour === 'none' || findMatchColour === null) {
+			findMatchColour = getVSCodeStyle(CSS_PROP_FIND_MATCH_HIGHLIGHT_BACKGROUND);
+		}
 
 		const setFlashColour = (colour: string) => {
 			document.body.style.setProperty('--git-graph-flashPrimary', modifyColourOpacity(colour, 0.7));

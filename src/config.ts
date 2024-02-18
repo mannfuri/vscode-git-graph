@@ -280,7 +280,7 @@ class Config {
 			uncommittedChanges: this.config.get<string>('graph.uncommittedChanges', 'Open Circle at the Uncommitted Changes') === 'Open Circle at the Checked Out Commit'
 				? GraphUncommittedChangesStyle.OpenCircleAtTheCheckedOutCommit
 				: GraphUncommittedChangesStyle.OpenCircleAtTheUncommittedChanges,
-			blink: this.config.get('graph.blink', 'red')
+			blink: this.config.get('graph.blink', 'none')
 		};
 	}
 
