@@ -158,9 +158,7 @@ class GitGraphView {
 		const currentBtn = document.getElementById('currentBtn')!, fetchBtn = document.getElementById('fetchBtn')!, findBtn = document.getElementById('findBtn')!, settingsBtn = document.getElementById('settingsBtn')!, terminalBtn = document.getElementById('terminalBtn')!;
 		currentBtn.innerHTML = SVG_ICONS.current;
 		currentBtn.addEventListener('click', () => {
-			if (this.commitHead) {
-				this.scrollToCommit(this.commitHead, true, true);
-			}
+			scrollToDot();
 		});
 		fetchBtn.title = 'Fetch' + (this.config.fetchAndPrune ? ' & Prune' : '') + ' from Remote(s)';
 		fetchBtn.innerHTML = SVG_ICONS.download;
@@ -569,7 +567,7 @@ class GitGraphView {
 	public getAuthorOptions(): ReadonlyArray<DialogSelectInputOption> {
 		const options: DialogSelectInputOption[] = [];
 		options.push({ name: 'All', value: SHOW_ALL_BRANCHES });
-		if(this.gitConfig && this.gitConfig.authors) {
+		if (this.gitConfig && this.gitConfig.authors) {
 			for (let i = 0; i < this!.gitConfig!.authors.length; i++) {
 				const author = this!.gitConfig!.authors[i];
 				options.push({ name: author.name, value: author.name });
@@ -915,8 +913,8 @@ class GitGraphView {
 
 
 		}
-		function getResizeColHtml(col:number) {
-			 return (col > 0 ? '<span class="resizeCol left" data-col="' + (col - 1) + '"></span>' : '') + (col < 4 ? '<span class="resizeCol right" data-col="' + col + '"></span>' : '');
+		function getResizeColHtml(col: number) {
+			return (col > 0 ? '<span class="resizeCol left" data-col="' + (col - 1) + '"></span>' : '') + (col < 4 ? '<span class="resizeCol right" data-col="' + col + '"></span>' : '');
 		}
 		this.tableElem.innerHTML = '<table>' + html + '</table>';
 		this.footerElem.innerHTML = this.moreCommitsAvailable ? '<div id="loadMoreCommitsBtn" class="roundedBtn">Load More Commits</div>' : '';
@@ -2019,7 +2017,7 @@ class GitGraphView {
 	private observeWebviewStyleChanges() {
 		let fontFamily = getVSCodeStyle(CSS_PROP_FONT_FAMILY),
 			editorFontFamily = getVSCodeStyle(CSS_PROP_EDITOR_FONT_FAMILY),
-			findMatchColour = getVSCodeStyle(CSS_PROP_FIND_MATCH_HIGHLIGHT_BACKGROUND),
+			findMatchColour = initialState.config.graph.blink || getVSCodeStyle(CSS_PROP_FIND_MATCH_HIGHLIGHT_BACKGROUND),
 			selectionBackgroundColor = !!getVSCodeStyle(CSS_PROP_SELECTION_BACKGROUND);
 
 		const setFlashColour = (colour: string) => {
@@ -2942,20 +2940,20 @@ class GitGraphView {
 		this.renderCdvFileViewTypeBtns();
 	}
 
-	private openFolders(open:boolean) {
+	private openFolders(open: boolean) {
 		let expandedCommit = this.expandedCommit;
 		if (expandedCommit === null || expandedCommit.fileTree === null) return;
 		let folders = document.getElementsByClassName('fileTreeFolder');
 		for (let i = 0; i < folders.length; i++) {
 			let sourceElem = <HTMLElement>(folders[i]);
 			let parent = sourceElem.parentElement!;
-			if(open) {
+			if (open) {
 				parent.classList.remove('closed');
 				sourceElem.children[0].children[0].innerHTML = SVG_ICONS.openFolder;
 				parent.children[1].classList.remove('hidden');
 				alterFileTreeFolderOpen(expandedCommit.fileTree, decodeURIComponent(sourceElem.dataset.folderpath!), true);
 
-			} else{
+			} else {
 				parent.classList.add('closed');
 				sourceElem.children[0].children[0].innerHTML = SVG_ICONS.closedFolder;
 				parent.children[1].classList.add('hidden');
@@ -3210,7 +3208,7 @@ class GitGraphView {
 		function setFolderBtns() {
 			let btns = document.getElementsByClassName('cdvFolderBtn');
 			for (let i = 0; i < btns.length; i++) {
-				if(listView)
+				if (listView)
 					btns[i].classList.add('hidden');
 				else
 					btns[i].classList.remove('hidden');
@@ -4066,4 +4064,35 @@ function generateSignatureHtml(signature: GG.GitSignature) {
 function closeDialogAndContextMenu() {
 	if (dialog.isOpen()) dialog.close();
 	if (contextMenu.isOpen()) contextMenu.close();
+}
+
+
+function scrollToDot() {
+	const headDots = document.getElementsByClassName('commitHeadDot');
+	if (headDots.length === 1) {
+		(headDots[0] as HTMLElement).parentElement?.scrollIntoView({ block: 'center' });
+
+		const commitParent = headDots[0].closest('.commit') as HTMLElement;
+		if (commitParent) {
+			// 添加类以开始动画
+			commitParent.classList.add('flash');
+
+			// 在一段时间后移除动画
+			setTimeout(() => {
+				commitParent.classList.remove('flash');
+			}, 850); // 在4秒后移除动画
+		}
+
+	} else {
+		const commits = document.getElementsByClassName('commit');
+		if (commits.length === 0) {
+			return;
+		}
+		const lastCommit = commits[commits.length - 1];
+
+		lastCommit.scrollIntoView();
+
+		// 递归调用
+		setTimeout(scrollToDot, 500); // 500毫秒后调用
+	}
 }
