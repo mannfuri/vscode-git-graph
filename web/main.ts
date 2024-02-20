@@ -4080,6 +4080,17 @@ function scrollToDot() {
 
 		const commitParent = headDots[0].closest('.commit') as HTMLElement;
 		if (commitParent) {
+
+			let view = document.getElementById('view');
+			if (view === null) {
+				return;
+			}
+
+			// 获取commitHeadDot的bodor的颜色
+			let headercolor = window.getComputedStyle(headDots[0] as HTMLElement).borderColor;
+			document.body.style.setProperty('--git-graph-flashPrimary', modifyColourOpacity(headercolor, 0.7));
+			document.body.style.setProperty('--git-graph-flashSecondary', modifyColourOpacity(headercolor, 0.5));
+
 			// 添加类以开始动画
 			commitParent.classList.add('flash');
 
