@@ -179,9 +179,17 @@ export class GitGraphView extends Disposable {
 				});
 				break;
 			case 'addTag':
-				errorInfos = [await this.dataSource.addTag(msg.repo, msg.tagName, msg.commitHash, msg.type, msg.message, msg.force, msg.withHash)];
+
+				let tmpTagName = msg.tagName;
+
+				if (msg.withHash) {
+					// msg.tagName 拼接
+					tmpTagName = tmpTagName + '.' + msg.commitHash.substring(0, 8);
+				}
+
+				errorInfos = [await this.dataSource.addTag(msg.repo, tmpTagName, msg.commitHash, msg.type, msg.message, msg.force, msg.withHash)];
 				if (errorInfos[0] === null && msg.pushToRemote !== null) {
-					errorInfos.push(...await this.dataSource.pushTag(msg.repo, msg.tagName, [msg.pushToRemote], msg.commitHash, msg.pushSkipRemoteCheck));
+					errorInfos.push(...await this.dataSource.pushTag(msg.repo, tmpTagName, [msg.pushToRemote], msg.commitHash, msg.pushSkipRemoteCheck));
 				}
 				this.sendMessage({
 					command: 'addTag',
